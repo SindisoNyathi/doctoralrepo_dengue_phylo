@@ -4,7 +4,7 @@
 #Goal: Correct and format the naming of our study sequences. 
 
 # Notes
-# This file runs as is; chnage only the serotype and run line by line. The code 
+# This file runs as is; change only the serotype and run line by line. The code 
 # Modifies the format of the sequence name to match the genbak format. 
 #******************************************************************************#
 #*
@@ -13,11 +13,12 @@
 #* Preliminaries
 require(ape)
 
-setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV4/study_consensus_genomes")
+setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV2/study_consensus_genomes")
+setwd("/Users/sindiso/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/Phylodynamics/DENV2/study_consensus_genomes_filtersensitivity")
 
 #Read the cohort data. 
-cohort_details <- read.csv("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics//Data/denv_cohort.csv")
-completecohort <- read.FASTA('denv4_study_cohort.fasta', type = 'DNA')
+cohort_details <- read.csv("/Users/sindiso/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/Phylodynamics/Data/denv_cohort.csv")
+completecohort <- read.FASTA('denv2_study_cohort_filstersa.fasta', type = 'DNA')
 no_samples <- length(completecohort)
 
 for (sample in 1:no_samples){
@@ -31,4 +32,4 @@ for (sample in 1:no_samples){
   
 }
   
-write.FASTA(completecohort, file = 'denv4_study_cohort.fasta')
+write.FASTA(completecohort, file = 'denv2_study_cohort_filstersa.fasta')
