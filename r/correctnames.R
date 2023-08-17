@@ -4,6 +4,7 @@ require(stringr)
 typing_data <- read.csv('DENV4/d4_typingdata.csv')
 metadata <- read.csv("DENV4/final_seq_metadata_denv4.csv")
 typing_data$RealID <- NA
+
 #Non study sequences
 for (i in 1:198){
   realid <- strsplit(typing_data$name[i], '\\.')
