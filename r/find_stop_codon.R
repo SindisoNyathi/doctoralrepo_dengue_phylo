@@ -18,12 +18,12 @@ require(gdata)
 require(lubridate)
 
 # Set working directory
-setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV1")
+setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV123")
 #******************************************************************************#
 
 #******************************************************************************#
 # Read the alignment
-alignment <- read.alignment('denv1_complete_cohort_n353_formatted_aligned_curated.fasta', format = 'fasta')
+alignment <- read.alignment('denv2_completecohort_n382_formatted_aligned_curated.fasta', format = 'fasta')
 no_seq <- alignment$nb
 
 # iterate through alignment

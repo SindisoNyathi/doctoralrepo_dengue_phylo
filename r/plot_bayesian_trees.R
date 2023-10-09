@@ -5,6 +5,8 @@
 # in powerpoint. 
 #Methods: 
 #'The World Shall Know True Art' 
+#'Upadates
+# Added code to plot the Sensitiivty analyses for relaxed Clock and strict filter parameters
 #******************************************************************************#
 
 #******************************************************************************#
@@ -245,6 +247,146 @@ denv2_tree_plot_supp <- ggtree(denv2_tree, mrsd='2022-01-01',  size = 1.75, aes(
               legend.text = element_text(size = 20))
   
 denv2_tree_plot_supp #PDF 60 x 40
+
+######*************************************##########
+######*************************************##########
+######*************************************##########
+#Plotting the relaxed clock tree. 
+# Read tree
+denv2_tree_relaxed <- read.beast("DENV2/bayesian_relaxedclockSA/denv2_complete_cohort_n378_relaxedclockSA_mcc.tree")
+
+# Meta data
+regions <- read.csv("Data/denv2_regions_coords.csv")
+regions_or <- ordered(regions[,1], levels = c(regions$Location[regions$Study_Site == 0], regions$Location[regions$Study_Site == 1]))
+regions <- regions[order(regions_or),]
+region_colours <- read.csv('manuscript_colours.csv')
+
+#Test plot
+ggtree(denv2_tree_relaxed, mrsd='2022-01-01',  size = 1.25,
+       ladderize = T) + 
+  geom_tiplab(size = 3, alpha = 0.9) +
+  geom_nodelab(aes(label=node))
+
+#Read in Metadata
+denv2_metadata <- read.csv("DENV2/final_seq_metadata_denv2.csv")
+denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (Study)", "Coastal Kenya (Study)", 
+                                                              "Central Kenya (Non-Study)", "Coastal Kenya (Non-Study)", 'External'))
+
+
+#DENV2 Tree plot. 
+offset_bar = 10
+offset_text = -12
+denv2_tree_relaxed@data$posterior <- round(as.numeric(denv2_tree_relaxed@data$posterior), digits = 2)
+denv2_tree_plot_relaxed <- ggtree(denv2_tree_relaxed, mrsd='2022-01-01',  size = 1.75,
+                                  ladderize = T) + 
+  geom_tiplab(size = 3, alpha = 1) +
+  geom_nodelab(aes(label=posterior), nudge_y = 0.4, nudge_x = -2, size = 4, colour = 'black') +
+  geom_tippoint(size = 2, alpha = 0.7) +
+  layout_rectangular() +
+  scale_color_manual(values = region_colours[,1], breaks = region_colours[,2], labels = region_colours[,3]) + 
+  xlab("Time (Years)") +
+  scale_x_continuous(limits = c(1850, 2125), breaks = c(1875, 1900, 1950, 2000, 2010, 2020)) +
+  
+  #Label The Genotypes
+  geom_cladelab(node=381, label= "II", color='black', fontsize=28, linewidth = 6, offset.text = offset_text,
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#CD3333") + 
+  geom_cladelab(node=652, label= "III", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#00CD00") +
+  geom_cladelab(node=602, label= "V", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#4F94CD") +
+  geom_cladelab(node=583, label= "IV", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "lightsalmon") +
+  geom_cladelab(node=745, label = "I", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "mediumorchid1") +
+  
+  geom_hilight(node=558, fill="#DC3220", alpha=0.6, extend = 0.0335) + #Kenya, Wajir and Mombasa
+  geom_hilight(node=386, fill="#005AB5", alpha=0.6, extend = 0.017) + #Kenya, Coastal
+  geom_hilight(node=583, fill="#40B0A6", alpha=0.6, extend = 0.08) + #Kenya, Western
+  
+  geom_vline(xintercept = 1850, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 1900, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 1950, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2000, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2010, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2020, color = 'black', size = 0.05, alpha = 1) +
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.9, size = 20), 
+              axis.text.x = element_text(size = 56, angle = 90, vjust = 0.5), 
+              legend.title = element_text(size = 20), 
+              legend.text = element_text(size = 20))
+
+##Save as 45 x 30
+#Plots/man1/denv2_bayes_relaxedSA.pdf
+denv2_tree_plot_relaxed
+
+
+######*************************************##########
+######*************************************##########
+######*************************************##########
+#Plotting the strict bioinformatics paramters tree. 
+# Read tree
+denv2_tree_strictbioinf <- read.beast("DENV2/bayesian_filterSA/denv_completecohort_n378_aligned_curated_filterSA_mcc.tree")
+
+# Meta data
+region_colours <- read.csv('manuscript_colours.csv')
+
+#Test plot
+ggtree(denv2_tree_strictbioinf, mrsd='2022-01-01',  size = 1.25,
+       ladderize = T) + 
+  geom_tiplab(size = 3, alpha = 0.9) +
+  geom_nodelab(aes(label=node))
+
+#Read in Metadata
+denv2_metadata <- read.csv("DENV2/final_seq_metadata_denv2.csv")
+denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (Study)", "Coastal Kenya (Study)", 
+                                                              "Central Kenya (Non-Study)", "Coastal Kenya (Non-Study)", 'External'))
+
+
+#DENV2 Tree plot. 
+offset_bar = 10
+offset_text = -12
+denv2_tree_strictbioinf@data$posterior <- round(as.numeric(denv2_tree_strictbioinf@data$posterior), digits = 2)
+denv2_tree_plot_strictbioinf <- ggtree(denv2_tree_strictbioinf, mrsd='2022-01-01',  size = 1.75,
+                                  ladderize = T) + 
+  geom_tiplab(size = 3, alpha = 1) +
+  geom_nodelab(aes(label=posterior), nudge_y = 0.6, nudge_x = -2.5, size = 4, colour = 'black') +
+  geom_tippoint(size = 2, alpha = 0.7) +
+  layout_rectangular() +
+  scale_color_manual(values = region_colours[,1], breaks = region_colours[,2], labels = region_colours[,3]) + 
+  xlab("Time (Years)") +
+  scale_x_continuous(limits = c(1850, 2125), breaks = c(1875, 1900, 1950, 2000, 2010, 2020)) +
+  
+  #Label The Genotypes
+  geom_cladelab(node=558, label= "II", color='black', fontsize=28, linewidth = 6, offset.text = offset_text,
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#CD3333") + 
+  geom_cladelab(node=465, label= "III", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#00CD00") +
+  geom_cladelab(node=415, label= "V", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#4F94CD") +
+  geom_cladelab(node=394, label= "IV", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "lightsalmon") +
+  geom_cladelab(node=380, label = "I", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "mediumorchid1") +
+  
+  geom_hilight(node=648, fill="#DC3220", alpha=0.6, extend = 0.0335) + #Kenya, Wajir and Mombasa
+  geom_hilight(node=603, fill="#005AB5", alpha=0.6, extend = 0.017) + #Kenya, Coastal
+  geom_hilight(node=396, fill="#40B0A6", alpha=0.6, extend = 0.08) + #Kenya, Western
+  
+  geom_vline(xintercept = 1850, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 1900, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 1950, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2000, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2010, color = 'black', size = 0.05, alpha = 1) +
+  geom_vline(xintercept = 2020, color = 'black', size = 0.05, alpha = 1) +
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.9, size = 20), 
+              axis.text.x = element_text(size = 56, angle = 90, vjust = 0.5), 
+              legend.title = element_text(size = 20), 
+              legend.text = element_text(size = 20))
+
+##Save as 45 x 30
+#Plots/man1/denv2_bayes_filstersSA.pdf
+denv2_tree_plot_strictbioinf
 }
 #******************************************************************************#
 
