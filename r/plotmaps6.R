@@ -52,11 +52,12 @@ setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/Phy
 
 # *** Stopping point, manually annotate linaeges before reading in again***
 #write.csv(denv_transitions, 'Results/denv_transitions.csv') 
-denv_transitions_lineages <- write.csv(denv_transitions_lineages, 'Results/denv_transitions_lineages.csv') 
+#denv_transitions_lineages <- write.csv(denv_transitions_lineages, 'Results/denv_transitions_lineages.csv') 
 
-denv_transitions_lineages$Date <- round(2022 - denv_transitions_lineages$Height)
-denv_transitions_lineages$Upper <- round(2022 - denv_transitions_lineages$Upper)
-denv_transitions_lineages$Lower <- round(2022 - denv_transitions_lineages$Lower)
+denv_transitions_lineages <- read.csv('Results/denv_transitions_lineages.csv')
+denv_transitions_lineages$Date <- round(denv_transitions_lineages$X)
+denv_transitions_lineages$Upper <- round(denv_transitions_lineages$Upper)
+denv_transitions_lineages$Lower <- round(denv_transitions_lineages$Lower)
 
 Locations <- c(denv_transitions_lineages$Source, denv_transitions_lineages$Destination)
 Locations <- unique(Locations)
@@ -123,7 +124,7 @@ world$study_region[which(world$name == "Wallis and Futuna Is.")] <- "Oceania"
 #******************************************************************************#
 #* Plot data
 denv_transitions_lineages$Lineage <- as.factor(denv_transitions_lineages$Lineage)
-denv_transitions_lineages_locations <- read.csv('Results/rate_parameters_evidence_exportations_importations_locations.csv')
+rate_parameters_evidence_exportations_importations_locations <- read.csv('Results/rate_parameters_evidence_exportations_importations_locations.csv')
 denv_transitions_lineages$DateF <- NA
 denv_transitions_lineages$DateF <- paste(denv_transitions_lineages$Date, '\n [', 
                                          denv_transitions_lineages$Upper, ' - ', 
@@ -135,17 +136,22 @@ denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior < 0.
 denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior < 0.9 & denv_transitions_lineages$Posterior > 0.75] <- '0.75 - 0.90'
 denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior > 0.9] <- '> 0.90'
 
-
+rate_parameters_evidence_exportations_importations <- denv_transitions_lineages
 rate_parameters_evidence_exportations_importations_L3 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 3,]
 rate_parameters_evidence_exportations_importations_L2 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 2,]
 rate_parameters_evidence_exportations_importations_L1 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 1,]
+rate_parameters_evidence_exportations_importations_wa <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 'wa',]
+rate_parameters_evidence_exportations_importations_sa <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 'sa',]
 
 rate_parameters_evidence_exportations_importations_locations_L1 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L1 == 1,]
 rate_parameters_evidence_exportations_importations_locations_L2 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L2 == 1,]
 rate_parameters_evidence_exportations_importations_locations_L3 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L3 == 1,]
+rate_parameters_evidence_exportations_importations_locations_wa <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$wa == 1,]
+rate_parameters_evidence_exportations_importations_locations_sa <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$sa == 1,]
 
-this_lineage_plot_data <- denv_transitions_lineages
-this_lineage_locations <- denv_transitions_lineages_locations#rate_parameters_evidence_exportations_importations_locations_L1
+
+this_lineage_plot_data <- rate_parameters_evidence_exportations_importations_wa
+this_lineage_locations <- rate_parameters_evidence_exportations_importations_locations_wa#rate_parameters_evidence_exportations_importations_locations_L1
 
 global_transmission_network_exportations_importations_plot <- ggplot() +
   geom_sf(data = world, aes(fill = study_region), show.legend = F, colour = NA) + 
@@ -165,8 +171,8 @@ global_transmission_network_exportations_importations_plot <- ggplot() +
    #          arrow = arrow(angle = 20, length = unit(0.2, "inches"),
     #                       ends = "last", type = "closed"), linetype = 1) + 
   
-  geom_textcurve(data = this_lineage_plot_data, 
-                 aes(x = Long.x, y = Lat.x, xend = Long.y, yend = Lat.y, label = Date), curvature = -0.4, 
+  geom_curve(data = this_lineage_plot_data, 
+                 aes(x = Source_long, y = Source_lat, xend = Dest_long, yend = Dest_lat), curvature = -0.4, 
                            arrow = arrow(angle = 20, length = unit(0.2, "inches"),
                                         ends = "last", type = "closed"), linetype = 1, size = 10, linewidth = 2) +
 
@@ -212,8 +218,9 @@ scale_fill_manual(name = "Region", values = paletteer_dynamic("cartography::past
         axis.title.x = element_blank(),
         axis.title.y = element_blank()) 
 
-global_transmission_network_exportations_importations_plot #L 2 and L3: PDF 8 x 18, L1: PDF 8 x 12
-
+global_transmission_network_exportations_importations_plot #L 2 and L3: PDF 8 x 18, L1: PDF 8 x 12, sa
+#sa <- Plots/man1/sa_map.pdf
+#wa <- Plots/man1/wa_map.pdf
 #******************************************************************************#
 
 #******************************************************************************#
@@ -282,3 +289,68 @@ global_transmission_local <- ggplot(data = world, size = 5) +
 global_transmission_local
 #save 8 x 10
 
+#******************************************************************************#
+
+#******************************************************************************#
+#*Plot additional west african and south african lineages
+#*
+#* Plot data
+denv_transitions_lineages$Lineage <- as.factor(denv_transitions_lineages$Lineage)
+denv_transitions_lineages_locations <- read.csv('Results/rate_parameters_evidence_exportations_importations_locations.csv')
+denv_transitions_lineages$DateF <- NA
+denv_transitions_lineages$DateF <- paste(denv_transitions_lineages$Date, '\n [', 
+                                         denv_transitions_lineages$Upper, ' - ', 
+                                         denv_transitions_lineages$Lower, ']', sep = '')
+
+# MAke posterior categorical to label
+denv_transitions_lineages$Posterior_lab <- NA
+denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior < 0.75] <- '< 0.75' 
+denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior < 0.9 & denv_transitions_lineages$Posterior > 0.75] <- '0.75 - 0.90'
+denv_transitions_lineages$Posterior_lab[denv_transitions_lineages$Posterior > 0.9] <- '> 0.90'
+
+
+rate_parameters_evidence_exportations_importations_L3 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 3,]
+rate_parameters_evidence_exportations_importations_L2 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 2,]
+rate_parameters_evidence_exportations_importations_L1 <- rate_parameters_evidence_exportations_importations[rate_parameters_evidence_exportations_importations$Lineage == 1,]
+
+rate_parameters_evidence_exportations_importations_locations_L1 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L1 == 1,]
+rate_parameters_evidence_exportations_importations_locations_L2 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L2 == 1,]
+rate_parameters_evidence_exportations_importations_locations_L3 <- rate_parameters_evidence_exportations_importations_locations[rate_parameters_evidence_exportations_importations_locations$L3 == 1,]
+
+this_lineage_plot_data <- denv_transitions_lineages[denv_transitions_lineages$Lineage == 'wa'|denv_transitions_lineages$Lineage == 'sa',]
+this_lineage_locations <- denv_transitions_lineages_locations#rate_parameters_evidence_exportations_importations_locations_L1
+
+global_transmission_network_exportations_importations_plot <- ggplot() +
+  geom_sf(data = world, aes(fill = study_region), show.legend = F, colour = NA) + 
+  geom_sf(data = world_kenya, colour = 'grey10', fill = 'grey') + 
+  xlim(-20, 180) +
+  
+  # Add other regions
+  geom_point(data = this_lineage_locations, aes(x = Long.x, y = Lat.x), size = 5, color = "grey40", shape = 16) + 
+
+geom_textcurve(data = this_lineage_plot_data, 
+               aes(x = Source_long, y = Source_lat, xend = Dest_long, yend = Dest_lat, label = Date), curvature = -0.4, 
+               arrow = arrow(angle = 20, length = unit(0.2, "inches"),
+                             ends = "last", type = "closed"), linetype = 1, size = 10, linewidth = 2) +
+  
+  # Size scale
+  scale_size_manual(name = "Support \n(Posterior Probability)", values = c('< 0.75' = 0.5, '0.75 - 0.90' = 1.5, '> 0.90' = 2), labels = c("< 0.75", "0.75 - 0.90", "> 0.90"), guide = "legend", drop = FALSE) +
+  
+scale_fill_manual(name = "Region", values = paletteer_dynamic("cartography::pastel.pal", 19)) + 
+  
+  theme(plot.title = element_text(size = 28, hjust = 0.5),
+        plot.subtitle = element_text(size = 24, hjust = 0.5),
+        panel.background = element_rect(fill = "aliceblue"), 
+        legend.title=element_text(size=16), 
+        legend.text=element_text(size=12),
+        legend.key.width = unit(3, "line"), 
+        #legend.position="none", 
+        axis.text.x=element_blank(),
+        axis.text.y=element_blank(), 
+        axis.line = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(), 
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+global_transmission_network_exportations_importations_plot #L 2 and L3: PDF 8 x 18, L1: PDF 8 x 12

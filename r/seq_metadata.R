@@ -18,19 +18,20 @@ require(gdata)
 require(lubridate)
 
 #Working directory
-setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV1")
+setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/DENV13Phylo")
 #******************************************************************************#
 
 #******************************************************************************#
 #*Read in data and begin formatting. 
 #Read in the file
-all_seq <- seqinr::read.fasta('denv1_complete_study_cohort.fasta')
+all_seq <- seqinr::read.fasta('Sequences/denv1/complete_study_sequences.fasta')
+genbank_metadata <- read.csv('Data/denv1_global_modified.csv')
 
 #Read in the region file
-regions <- read.csv("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/Data/regions.csv")
+regions <- read.csv("~/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/Phylodynamics/Data/regions.csv")
 no_seq <- length(all_seq)
 seq_metadata <- as.data.frame(matrix(nrow = no_seq, ncol = 4))
-colnames(seq_metadata) <- c('ID', 'Country', 'City', 'Date')
+colnames(seq_metadata) <- c('ID', 'Country', 'Date', 'Region')
 
 for (i in c(1:no_seq)){
   
@@ -40,120 +41,40 @@ for (i in c(1:no_seq)){
   seq_atts <- attributes(seq)
   name <- seq_atts[[1]] 
   name <- gdata::trim(name) #Removes leading and trailing white space
-  seq_attributes <- seq_atts[[2]]
-  seq_attributes <- strsplit(seq_attributes, split = '|', fixed = T)
   
-  #Get the date
-  date = NA
-  if (length(seq_attributes[[1]]) > 3){
-    date = seq_attributes[[1]][[length(seq_attributes[[1]])]] #Lists in R are so Stupid
-  }
-  date <- gdata::trim(date)
-  
-  #Get the city
-  country_city <- strsplit(seq_attributes[[1]][[2]], split = ':', fixed = T)
-  if (length(country_city[[1]]) > 1) {
-    city <- country_city[[1]][[2]]
-    city <- gdata::trim(city)
-    city <- strsplit(city, split = ' ')
-    
-    #If city is more than 1 element take only the first. 
-    if (length(city[[1]]) > 1){
-      city <- city[[1]][1]
-    }
-  } else {
-    city <- NA
-  }
-  
-  #Remove space or mpunctuation from string
-  city <- str_replace(city, "\'", "")
-  city <- str_replace(city, " ", "")
-  city <- str_replace(city, "-", "")
-  city <- str_replace(city, ",", "")
-  
-  #Get the country
-  country_name <- seq_attributes[[1]][[3]]
-  
-  #Clean the country name
-  country_name <- str_replace(country_name, "\'", "")
-  country_name <- str_replace(country_name, " ", "")
-  country_name <- str_replace(country_name, "-", "")
-  country_name <- str_replace(country_name, ",", "")
+  date <- genbank_metadata$DateFormat[genbank_metadata$Accession == name]
+  country <- genbank_metadata$Country[genbank_metadata$Accession == name]
+  region <- regions$Location[regions$Country == country]
   
   #Add to dataframe
   seq_metadata[i , 1] <- name
-  seq_metadata[i , 2] <- country_name
-  seq_metadata[i , 3] <- city
-  seq_metadata[i , 4] <- date
-  
-}
-
-# This runs with a few warnings leave as is/as are.
-
-#If City columns is NA make country city, 
-seq_metadata$City[which(is.na(seq_metadata$City))] <- seq_metadata$Country[which(is.na(seq_metadata$City))]
-
-#Format dates. 
-seq_metadata$Date2 <- parse_date_time(seq_metadata$Date, orders = c('ymd', 'y', 'ym'))
-seq_metadata$Date3 <- year(seq_metadata$Date2)
-seq_metadata$NewID <- NA
-
-#At this step do the following, basically choosing which locations to include as cities vs. countries. If enough data is provided
-# to include the city, include other wise include country. Generally include city for within africa sequences, but leave as country for everything else. 
-#1. If locations have no city name, replace city with country, 
-#2. IF sequences are missing both city and country remove the sequence
-#3. If sequences are missing date, remove the sequences. 
-#4. Include Kenya sequences that only have city information or some within country geographic locator. 
-#NB No spaces between names
-#NB Pay particular attention to India, China since they are large and if possible we want to include cities here. 
-write.csv(seq_metadata, 'seq_metadata_denv1_manualfix.csv')
-seq_metadata <- read.csv('seq_metadata_denv1_manualfixed.csv')
-no_seq <- nrow(seq_metadata)
-
-#Subset to include only sequences in the excel file. 
-all_seq <- all_seq[which(names(all_seq) %in% seq_metadata[,1])]
-
-#Fix the sequence names
-for (i in c(1:no_seq)){
-  
-  #Retrieve sequence name
-  seq <- all_seq[[i]]
-  this_seq_att <- attributes(seq)
-  this_seq_name <- attributes(seq)[1]
-  
-  #Retrieve the proper date. 
-  this_seq_newdate <- seq_metadata$Date[which(seq_metadata$ID == this_seq_name)]
-  this_seq_newloc <- seq_metadata$Location[which(seq_metadata$ID == this_seq_name)]
-  
-  # Get the region
-  if (this_seq_newloc %in% regions$Country)
-    {this_seq_newloc <- regions$Location[which(regions$Country == this_seq_newloc)]}
-  
-  #Split attributes
-  this_seq_att_split <- strsplit(this_seq_att$Annot, split = '|', fixed = T)
-  
-  #Modify
-  new_seq_att <- paste(this_seq_att$name, this_seq_newloc, this_seq_newdate, sep = '/')
-  
-  #Change original
-  attributes(all_seq[[i]])$Annot <- new_seq_att
-  
-  #Change ID in file. 
-  seq_metadata$Location[which(seq_metadata$ID == this_seq_name)] <- this_seq_newloc
-  seq_metadata$ID[which(seq_metadata$ID == this_seq_name)] <- new_seq_att
+  seq_metadata[i , 2] <- country
+  seq_metadata[i , 3] <- date
+  seq_metadata[i , 4] <- region
   
   
+  #Sequence name
+  # african_regions <- c("WesternAfrica", 'SouthernAfrica', 'CentralAfrica', 'EasternAfrica', 'NothernAfrica')
+  # if (region %in% african_regions){
+  #   true_name <- paste(name, '/', country, '/', date, sep = '')}
+  # else{
+  #   true_name <- paste(name, '/', region, '/', date, sep = '')
+  # }
+  # 
+  true_name <- paste(name, '/', region, '/', date, sep = '')
+  attributes(all_seq[[i]])$Annot <- true_name
+  names(all_seq[[i]]) <- true_name
 }
 
 #******************************************************************************#
 
 #******************************************************************************#
 #Save the sequences. 
-write.fasta(all_seq, getAnnot(all_seq), 'denv1_complete_cohort_n353_formatted.fasta')
+write.fasta(all_seq, getAnnot(all_seq), 'Sequences/denv1_study_sequences_n385_formatted.fasta')
 
 #Save the file. 
-write.csv(seq_metadata, 'final_seq_metadata_denv1.csv')
-write.table(seq_metadata, 'final_seq_metadata_denv1.tsv', sep = '\t')
+write.csv(seq_metadata, 'Data/seq_metadata_denv1.csv')
+#write.table(seq_metadata, 'final_seq_metadata_denv1.tsv', sep = '\t')
 #******************************************************************************#
 
 #******************************************************************************#

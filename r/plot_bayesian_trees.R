@@ -112,6 +112,109 @@ denv2_tree_plot <- ggtree(denv2_tree, mrsd='2022-01-01',  size = 2,# aes(color =
 #man1/denv2_bayes_main.pdf
 denv2_tree_plot
 
+
+####################################
+### Additional DENV2 tree to show outbreak causing lineages
+####################################
+denv2_tree_plot_wasa <- ggtree(denv2_tree, mrsd='2022-01-01',  size = 2,# aes(color = Location),
+                          ladderize = T) + 
+  #geom_label(aes(x=branch, label=Location)) +
+  geom_tippoint(aes(colour = Location), size = 15, alpha = 0.9) +
+  layout_rectangular() +
+  scale_color_manual(values = region_colours[,1], breaks = region_colours[,2], labels = region_colours[,3]) + 
+  xlab("Time (Years)") +
+  #ylim(c(0, 480)) + 
+  scale_x_continuous(limits = c(1860, 2050), breaks = c(1875, 1900, 1950, 2000, 2020)) +
+  
+  #geom_text(aes(x=branch, label=labels, vjust=-.5)) +
+  
+  #geom_vline(xintercept = 1850, color = 'black', size = 0.1, alpha = 1) +
+  geom_vline(xintercept = 1900, color = 'black', size = 0.1, alpha = 1) +
+  geom_vline(xintercept = 1950, color = 'black', size = 0.1, alpha = 1) +
+  geom_vline(xintercept = 2000, color = 'black', size = 0.1, alpha = 1) +
+  geom_vline(xintercept = 2010, color = 'black', size = 0.1, alpha = 1) +
+  geom_vline(xintercept = 2020, color = 'black', size = 0.1, alpha = 1) +
+  
+  #Label The Genotypes
+  geom_cladelab(node=392, label= "II", color='black', fontsize=28, linewidth = 6, offset.text = offset_text,
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#CD3333") + 
+  geom_cladelab(node=591, label= "III", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#00CD00") +
+  geom_cladelab(node=706, label= "V", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "#4F94CD") +
+  geom_cladelab(node=685, label= "IV", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "lightsalmon") +
+  geom_cladelab(node=380, label = "I", color='black', fontsize=28, offset.text = offset_text,linewidth = 6, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_bar, barsize = 8, barcolour = "mediumorchid1") +
+  
+  geom_hilight(node=483, fill="grey30", alpha=0.6, extend = 0.0335) + #West Africa
+  #geom_hilight(node=556, fill="grey30", alpha=0.6, extend = 0.5) + #South Africa
+
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.9, size = 20), 
+              axis.text.x = element_text(size = 56, angle = 0, vjust = 0.5), 
+              legend.title = element_text(size = 20), 
+              legend.text = element_text(size = 20))
+
+
+##Save as 45 x 30
+#Plots/man1/denv2_bayes_main_wasa.pdf
+denv2_tree_plot_wasa
+
+#Individual clades
+#West Africa: Node 583
+denv2_tree_subset_wa <- tree_subset(denv2_tree, node = 483, levels_back = 0)
+denv2_tree_subset_wa_plot <- ggtree(denv2_tree_subset_wa, mrsd='2022-01-01',  size = 1.25, #aes(color = Location),
+                                    ladderize = T) + 
+  geom_tiplab(size = 8, alpha = 0.9, offset = 1, align = T) +
+  geom_tippoint(aes(color = Location), size = 15, alpha = 0.8) +
+  layout_rectangular() +
+  scale_color_manual(values = region_colours[,1], breaks = region_colours[,2], labels = region_colours[,3]) + 
+  xlab("Time (Years") +
+  scale_x_continuous(breaks = c(2010, 2015, 2020), limits = c(2010, 2075)) +
+  geom_vline(xintercept = 1980, color = 'black', size = 0.1, alpha = 0.2) +
+  geom_vline(xintercept = 2000, color = 'black', size = 0.1, alpha = 0.2) +
+  #geom_vline(xintercept = 2005, color = 'black', size = 0.1, alpha = 0.6) +
+  geom_vline(xintercept = 2010, color = 'black', size = 0.1, alpha = 0.2) +
+  #geom_vline(xintercept = 2015, color = 'black', size = 0.1, alpha = 0.6) +
+  geom_vline(xintercept = 2020, color = 'black', size = 0.1, alpha = 0.2) +
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.9, size = 40), 
+              axis.text.x = element_text(size = 40, angle = 90, vjust = 0.5), 
+              legend.title = element_text(size = 40), 
+              legend.text = element_text(size = 40)) 
+#PDF: 20x15
+denv2_tree_subset_wa_plot
+#Plots/man1/denv2_tree_subset_wa.pdf
+
+#South Africa: Node 556
+denv2_tree_subset_sa <- tree_subset(denv2_tree, node = 552, levels_back = 0)
+denv2_tree_subset_sa_plot <- ggtree(denv2_tree_subset_sa, mrsd='2022-01-01',  size = 1.25, #aes(color = Location),
+                                    ladderize = T) + 
+  geom_tiplab(size = 8, alpha = 0.9, offset = 1, align = T) +
+  geom_tippoint(aes(color = Location), size = 15, alpha = 0.8) +
+  layout_rectangular() +
+  scale_color_manual(values = region_colours[,1], breaks = region_colours[,2], labels = region_colours[,3]) + 
+  xlab("Time (Years") +
+  scale_x_continuous(breaks = c(2010, 2015, 2020), limits = c(2010, 2075)) +
+  geom_vline(xintercept = 1980, color = 'black', size = 0.1, alpha = 0.2) +
+  geom_vline(xintercept = 2000, color = 'black', size = 0.1, alpha = 0.2) +
+  #geom_vline(xintercept = 2005, color = 'black', size = 0.1, alpha = 0.6) +
+  geom_vline(xintercept = 2010, color = 'black', size = 0.1, alpha = 0.2) +
+  #geom_vline(xintercept = 2015, color = 'black', size = 0.1, alpha = 0.6) +
+  geom_vline(xintercept = 2020, color = 'black', size = 0.1, alpha = 0.2) +
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.9, size = 40), 
+              axis.text.x = element_text(size = 40, angle = 90, vjust = 0.5), 
+              legend.title = element_text(size = 40), 
+              legend.text = element_text(size = 40)) 
+#PDF: 20x15
+denv2_tree_subset_sa_plot
+#Plots/man1/denv2_tree_subset_sa.pdf
+####################################
+### 
+####################################
+
 #Add the subtrees. for the three lineages
 #Lineage 1: Node 502
 denv2_tree_subset_L1 <- tree_subset(denv2_tree, node = 502, levels_back = 1)
@@ -274,12 +377,12 @@ denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (St
 
 
 #DENV2 Tree plot. 
-offset_bar = 10
+offset_bar = 30
 offset_text = -12
 denv2_tree_relaxed@data$posterior <- round(as.numeric(denv2_tree_relaxed@data$posterior), digits = 2)
-denv2_tree_plot_relaxed <- ggtree(denv2_tree_relaxed, mrsd='2022-01-01',  size = 1.75,
+denv2_tree_plot_relaxed <- ggtree(denv2_tree_relaxed, mrsd='2022-01-01',  size = 1.25,
                                   ladderize = T) + 
-  geom_tiplab(size = 3, alpha = 1) +
+  geom_tiplab(size = 4.5, alpha = 1) +
   geom_nodelab(aes(label=posterior), nudge_y = 0.4, nudge_x = -2, size = 4, colour = 'black') +
   geom_tippoint(size = 2, alpha = 0.7) +
   layout_rectangular() +
@@ -313,9 +416,10 @@ denv2_tree_plot_relaxed <- ggtree(denv2_tree_relaxed, mrsd='2022-01-01',  size =
               plot.title = element_text(hjust = 0.9, size = 20), 
               axis.text.x = element_text(size = 56, angle = 90, vjust = 0.5), 
               legend.title = element_text(size = 20), 
-              legend.text = element_text(size = 20))
+              legend.text = element_text(size = 20), 
+              text = element_text(family = "Verdana"))
 
-##Save as 45 x 30
+##Save as 55 x 30
 #Plots/man1/denv2_bayes_relaxedSA.pdf
 denv2_tree_plot_relaxed
 
@@ -343,12 +447,12 @@ denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (St
 
 
 #DENV2 Tree plot. 
-offset_bar = 10
+offset_bar = 40
 offset_text = -12
 denv2_tree_strictbioinf@data$posterior <- round(as.numeric(denv2_tree_strictbioinf@data$posterior), digits = 2)
-denv2_tree_plot_strictbioinf <- ggtree(denv2_tree_strictbioinf, mrsd='2022-01-01',  size = 1.75,
+denv2_tree_plot_strictbioinf <- ggtree(denv2_tree_strictbioinf, mrsd='2022-01-01',  size = 1.25,
                                   ladderize = T) + 
-  geom_tiplab(size = 3, alpha = 1) +
+  geom_tiplab(size = 4.5, alpha = 1) +
   geom_nodelab(aes(label=posterior), nudge_y = 0.6, nudge_x = -2.5, size = 4, colour = 'black') +
   geom_tippoint(size = 2, alpha = 0.7) +
   layout_rectangular() +
@@ -966,14 +1070,14 @@ for (i in 1:26) {
 
 #******************************************************************************#
 #*
-"Tell all the truth but tell it slant —
-Success in Circuit lies
-Too bright for our infirm Delight
-The Truth's superb surprise
-As Lightning to the Children eased
-With explanation kind
-The Truth must dazzle gradually
-Or every man be blind —"
+# "Tell all the truth but tell it slant —
+# Success in Circuit lies
+# Too bright for our infirm Delight
+# The Truth's superb surprise
+# As Lightning to the Children eased
+# With explanation kind
+# The Truth must dazzle gradually
+# Or every man be blind —"
 
-Emily Dickinson
+#Emily Dickinson
 

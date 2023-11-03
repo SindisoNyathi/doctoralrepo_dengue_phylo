@@ -5,12 +5,15 @@
   # in powerpoint. 
   #Methods: 
   #'The World Shall Know True Art' 
+  #'
+  #'Updates: Add plots to show the impact of strict filters. 
   #******************************************************************************#
   
   #******************************************************************************#
   #Preliminaries
   #Set Working Directory
   setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics")
+  setwd("/Users/sindiso/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/Phylodynamics")
 
 #Load or install required pacakges. 
 #require('wesanderson') # For this project we will use darjeeling 1 and 2.
@@ -37,14 +40,32 @@ require(treeio)
 #*#For the complete plot. 
 #*Read in the tree
 denv2_raxml_tree <- read.tree("DENV2/ml/raxml_.raxml.support")
-rooted_raxml_tree<- phangorn::midpoint(denv2_raxml_tree)
+  tempest_outgroup <- c('GQ868588.1/NorthAmerica/1983',
+                        'GQ868599.1/SouthAmerica/1987',
+                        'JX966379.1/NorthAmerica/1994',
+                        'GQ868592.1/SouthAmerica/1986',
+                        'MW946575.1/SouthAmerica/1996',
+                        'JX966380.1/NorthAmerica/1969',
+                        'OK469349.1/Oceania/1972',
+                        'MW946475.1/Oceania/1974',
+                        'GQ398257.1/LowerSouthEasternAsia/1977',
+                        'KJ918750.1/UpperSouthEasternAsia/2007')
+
+  denv2_raxml_tree_rooted <- root(denv2_raxml_tree, outgroup = tempestroot, resolve.root = T)
+  
+  #Correct the edge length. 
+  tr <- denv2_raxml_tree_rooted
+  b<-sum(tr$edge.length[tr$edge==379])
+  tr$edge.length[which(tr$edge==379)]<-b/2
+  denv2_raxml_tree_rooted <- tr
+  is.rooted(denv2_raxml_tree_rooted)
 
 #Read in Metadata
 denv2_metadata <- read.csv("DENV2/final_seq_metadata_denv2.csv")
 denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (Study)", "Coastal Kenya (Study)", 
                                                               "Central Kenya (Non-Study)", "Coastal Kenya (Non-Study)", 'External'))
 # Examine original tree
-test_tree <- ggtree(rooted_raxml_tree, branch.length='rate', ladderize = T, size = 1) +
+test_tree <- ggtree(denv2_raxml_tree_rooted, branch.length='rate', ladderize = T, size = 1) +
   geom_tiplab(size = 3, alpha = 0.9) +
   xlim(c(0, 0.1)) +
   geom_nodelab(aes(label=node), size = 1) + geom_treescale(x=0.2, y=-20, width=0.1, color='black', offset = 5, linesize = 1.5, fontsize = 14)
@@ -59,18 +80,18 @@ test_tree_genotypes +
                                                       "Central Kenya (Non-Study)" = '#1A85FF'))
 
 #Visualize to get nodes
-ggtree(rooted_raxml_tree, branch.length='rate', ladderize = T, size = 1) +
+ggtree(denv2_raxml_tree_rooted, branch.length='rate', ladderize = T, size = 1) +
   #geom_tippoint(size = 1, alpha = 0.9) +
   geom_tiplab(size = 1, alpha = 0.9) +
   geom_nodelab(aes(label=node), size = 1)
 
 offset.text_value = 0.004
-offset_value = -0.00
+offset_value = 0.0
 
 #Complete tree
 offset_bar = -37.5
 offset_text = -12
-no_annot <- ggtree(rooted_raxml_tree, branch.length = 'rate', ladderize = T, size = 2.25) + #,  layout = "fan", open.angle=120) +
+no_annot <- ggtree(denv2_raxml_tree_rooted, branch.length = 'rate', ladderize = T, size = 2.25) + #,  layout = "fan", open.angle=120) +
   geom_tippoint(size = 8, alpha = 0.9) +
   #ggtitle("Maximum Likelihood Tree of Global DENV2 Sequences") +
   #geom_nodelab(aes(label=node), nudge_y = 10, nudge_x = -0.01) +
@@ -83,10 +104,10 @@ no_annot <- ggtree(rooted_raxml_tree, branch.length = 'rate', ladderize = T, siz
   #Highlight Relevant nodes
   geom_hilight(node=470, fill="#DC3220", alpha=0.4, extend = 0.02475) + #Kenya, Wajir and Mombasa
   geom_hilight(node=664, fill="#005AB5", alpha=0.4, extend = 0.0005) + #Kenya, Coastal
-  geom_hilight(node=620, fill="#40B0A6", alpha=0.4, extend = 0.065) + #Kenya,Western
+  geom_hilight(node=619, fill="#40B0A6", alpha=0.4, extend = 0.065) + #Kenya,Western
   
   #Scale
-  xlim(c(0, 0.105)) + 
+  #xlim(c(0, 0.105)) + 
   #ylim(c(0, 400)) + 
   #Label The Genotypes
    geom_cladelab(node=471, label= "II", color='black', fontsize=35, linewidth = 8, offset.text = offset.text_value,
@@ -125,6 +146,7 @@ no_annot_data_label <- no_annot_data +
                                 "Central Kenya"))
 
 plot(no_annot_data_label) #PDF 35 x 25
+#Plots/man1/denv2_ml_main.pdf
 
 jpeg("Plots/denv2_ml_tree.jpg", width = 600, height = 700)
 plot(no_annot) 
@@ -283,6 +305,142 @@ supp_plot_data_label <- supp_plot_data +
 plot(supp_plot_data_label) #55 x 30
 
 #Kenya nodes.
+##############################################################
+##############################################################
+##############################################################
+reroot<-function(tree,node.number,position){
+  # first, re-root the tree at node.number
+  tr<-root(tree,node=node.number,resolve.root=T)
+  # now re-allocate branch length to the two edges descending
+  # from the new root node
+  b<-sum(tr$edge.length[tr$edge==(length(tree$tip)+1)])
+  tr$edge.length[tr$edge==(length(tree$tip)+1)]<-c(position,b-position)
+  
+  
+  return(tr)
+}
+##############################################################
+##############################################################
+##############################################################
+# Strict paramter cutoffs. 
+
+#*#For the complete plot. 
+#*Read in the tree
+denv2_raxml_tree_filterSA <- read.tree("DENV2/ml_filterSA/raxml_.raxml.support")
+tempestroot <- c('KJ918750.1/UpperSouthEasternAsia/2007',
+ 'GQ398257.1/LowerSouthEasternAsia/1977',
+ 'FJ898449.1/CentralAmericaandCaribbean/1984',
+ 'GQ868599.1/SouthAmerica/1987',
+ 'GQ868588.1/NorthAmerica/1983',
+ 'JX966379.1/NorthAmerica/1994',
+ 'MW946575.1/SouthAmerica/1996',
+ 'GQ868592.1/SouthAmerica/1986',
+ 'JX966380.1/NorthAmerica/1969',
+ 'OK469349.1/Oceania/1972',
+ 'MW946475.1/Oceania/1974',
+ 'MW741553.1/Oceania/2000')
+
+denv2_raxml_tree_filterSA_rooted <- root(denv2_raxml_tree_filterSA, outgroup = tempestroot, resolve.root = T)
+#Correct the edge length. 
+tr <- denv2_raxml_tree_filterSA_rooted
+b<-sum(tr$edge.length[tr$edge==379])
+tr$edge.length[which(tr$edge==379)]<-b/2
+denv2_raxml_tree_filterSA_rooted <- tr
+is.rooted(denv2_raxml_tree_filterSA_rooted)
+#No midpoint rooting as per reviewers. 
+#rooted_raxml_tree <- phangorn::midpoint(denv2_raxml_tree_filterSA)
+
+#Read in Metadata
+denv2_metadata <- read.csv("DENV2/final_seq_metadata_denv2.csv")
+denv2_metadata$Site <- factor(denv2_metadata$Site, levels = c("Western Kenya (Study)", "Coastal Kenya (Study)", 
+                                                              "Central Kenya (Non-Study)", "Coastal Kenya (Non-Study)", 'External'))
+# Examine original tree
+test_tree <- ggtree(denv2_raxml_tree_filterSA, branch.length='rate', ladderize = T, size = 1) +
+  geom_tiplab(size = 3, alpha = 0.9) +
+  xlim(c(0, 0.1)) +
+  geom_nodelab(aes(label=node), size = 1) + geom_treescale(x=0.2, y=-20, width=0.1, color='black', offset = 5, linesize = 1.5, fontsize = 14)
+
+test_tree_genotypes <- test_tree %<+% denv2_metadata
+test_tree_genotypes + 
+  geom_tippoint(aes(color = Genotype), size = 1) +
+  geom_treescale(x=0.01) +
+  xlim(c(0, 0.1))
+scale_color_manual(name = "Study Sites", values = c('External' = 'grey40', "Coastal Kenya (Non-Study)" = '#1AFF1A', 
+                                                    "Western Kenya (Study)" = '#FFC20A', "Coastal Kenya (Study)" = '#1AFF1A', 
+                                                    "Central Kenya (Non-Study)" = '#1A85FF'))
+
+#Visualize to get nodes
+ggtree(denv2_raxml_tree_filterSA_rooted, branch.length='rate', ladderize = T, size = 1) +
+  #geom_tippoint(size = 1, alpha = 0.9) +
+  geom_tiplab(size = 4, alpha = 0.9) +
+  geom_nodelab(aes(label=node), size = 4)
+
+offset.text_value = 0.004
+offset_value = 0.03
+
+#Complete tree
+offset_bar = 70
+offset_text = -12
+no_annot <- ggtree(denv2_raxml_tree_filterSA_rooted, branch.length = 'rate', ladderize = T, size = 1) + #,  layout = "fan", open.angle=120) +
+  #geom_tippoint(size = 1, alpha = 0.9) +
+  #ggtitle("Maximum Likelihood Tree of Global DENV2 Sequences") +
+  #geom_label_repel(aes(label=label, fill=label)) + 
+  #geom_tiplab(size = 4, alpha = 0.9) +
+  #geom_nodepoint(aes(color = as.numeric(label)), size=5) +
+  #colorspace::scale_color_continuous_sequential(name = "Bootstrap\nSupport Value (%)", palette = "Heat") +
+  geom_treescale(x=0.05, y=-10, width=0.01, color='black', offset = 2.5, linesize = 1.5, fontsize = 14) +
+  
+  #geom_label2(aes(subset > 50, label=label), size=2, color="darkred", alpha=0.5) +
+  #Highlight Relevant nodes
+  #geom_label2(aes(subset > 50, label=label), size=2, color="darkred", alpha=0.5) +
+  #Highlight Relevant nodes
+  geom_hilight(node=542, fill="#DC3220", alpha=0.4, extend = 0.020) + #Kenya, Wajir and Mombasa
+  geom_hilight(node=384, fill="#005AB5", alpha=0.4, extend = 0.0005) + #Kenya, Coastal
+  geom_hilight(node=702, fill="#40B0A6", alpha=0.4, extend = 0.060) + #Kenya,Western
+  
+  #Scale
+  xlim(c(0, 0.15)) + 
+  
+  #Label The Genotypes
+  geom_cladelab(node=543, label= "II", color='black', fontsize=35, linewidth = 8, offset.text = offset.text_value,
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_value, barsize = 4, barcolour = "#CD3333") + 
+  geom_cladelab(node=556, label= "III", color='black', fontsize=35, offset.text = offset.text_value,linewidth = 8, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_value, barsize = 4, barcolour = "#00CD00") +
+  geom_cladelab(node=650, label= "V", color='black', fontsize=35, offset.text = offset.text_value,linewidth = 8, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_value, barsize = 4, barcolour = "#4F94CD") +
+  geom_cladelab(node=700, label= "IV", color='black', fontsize=35, offset.text = offset.text_value,linewidth = 8, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_value, barsize = 4, barcolour = "lightsalmon") +
+  geom_cladelab(node=755, label= "I", color='black', fontsize=35, offset.text = offset.text_value,linewidth = 8, 
+                align = TRUE, angle = 90, hjust = 0.5, offset = offset_value, barsize = 4, barcolour = "mediumorchid1") +
+  
+  theme_tree2(legend.position="none", 
+              plot.title = element_text(hjust = 0.5, size = 70), 
+              legend.title = element_text(size = 40), 
+              legend.text = element_text(size = 32), 
+              #legend.position = c(.2, 0.75),
+              legend.key.width = unit(1.25, "cm"),
+              legend.key.height = unit(2, "cm"),
+              axis.text.x=element_blank(),
+              axis.text.y=element_blank(), 
+              axis.line.x = element_blank(),
+              axis.ticks.x = element_blank())
+
+no_annot_data <- no_annot %<+% denv2_metadata
+no_annot_data_label <- no_annot_data + 
+  #xlim(c(0, 0.13)) + 
+  geom_tiplab(size = 2.5, offset = 0.001) + 
+  geom_tippoint(aes(color = Site), size = 4) +
+  geom_nodelab(aes(label=label), nudge_y = 1, nudge_x = -0.003) +
+  scale_color_manual(name = "Study Sites", values = c('External' = 'grey80', "Coastal Kenya (Non-Study)" = '#1AFF1A', 
+                                                      "Western Kenya (Study)" = '#FFC20A', "Coastal Kenya (Study)" = '#DC3220', 
+                                                      "Central Kenya (Non-Study)" = '#1A85FF'), drop = FALSE)
+
+plot(no_annot_data_label) #PDF 35 x 25
+#Plots/man1/denv2_ml_filtersSA.pdf
+jpeg("Plots/denv2_ml_tree.jpg", width = 600, height = 700)
+plot(no_annot) 
+dev.off()
+
 }
 #******************************************************************************#
 

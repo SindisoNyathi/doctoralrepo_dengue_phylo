@@ -26,7 +26,7 @@
 #******************************************************************************#
 #Preliminaries
 #Set Working Directory
-setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathi's Files/Dengue Evolution/Phylodynamics/DENV3/non_study_genomes/sequences_to_reduce")
+setwd("~/Library/CloudStorage/Box-Box/Sindiso Nyathis Files/Dengue Evolution/DENV13Phylo")
 
 #Load or install required pacakges. 
 #Bioconductor.
@@ -43,7 +43,7 @@ require(ape)
 
 #******************************************************************************#
 #Retrieve the list of files to read in.
-sequences_to_reduce <- read.table('sequences_to_reduce.txt')
+sequences_to_reduce <- read.table('Sequences/DENV1/SCG/sequences_to_reduce.txt')
 no_of_files <- nrow(sequences_to_reduce)
 
 # Keep count of sequences. 
@@ -52,35 +52,35 @@ all_reduced_count = 0
 for (i in 1:no_of_files){
   
   #Read in the file of sequences
-  this_aligned_seq_group <- read.FASTA(paste("aligned_", sequences_to_reduce[i,], sep = ''), type = 'DNA')
+  filename <- sequences_to_reduce[i,]
+  this_aligned_seq_group <- read.FASTA(paste('Sequences/DENV1/SCG/', filename, sep = ""), type = 'DNA')
   
   #Get the number of sequneces
   old_n <- length(this_aligned_seq_group)
   
   #Get the reduction factor (10 (if old_n > 100) or 6(if old_n < 100))
-  reduction_factor <- ifelse(old_n < 30, 4, 
-                             ifelse(31 < old_n & old_n < 100, 8, 
-                                    ifelse(100 < old_n & old_n < 500, 15, 
-                                           ifelse(500 < old_n, 20))))
+  reduction_factor <- ifelse(old_n < 10, 6,
+                             ifelse(old_n < 30, 12, 
+                                    ifelse(30 < old_n & old_n < 100, 20, 
+                                           ifelse(100 < old_n & old_n < 500, 7, 
+                                                  ifelse(500 < old_n & old_n < 1000, 60,
+                                                         ifelse(1000 < old_n, 85))))))
   
   #seq group_name
   this_aligned_seq_group_name <- sequences_to_reduce[i,]
-    
-  #Get the number of sequence. 
-  no_sequences <- length(this_aligned_seq_group)
   
   #Create the distance matrix
-  this_seq_dist_mat <- as.matrix(dist.dna(this_aligned_seq_group, model = 'raw'))
+  this_seq_dist_mat <- as.matrix(dist.dna(this_aligned_seq_group, model = 'raw', pairwise.deletion = T))
   
   #Create the clusters based on distance matrices.
   this_seq_hc_obj <- hclust(as.dist(this_seq_dist_mat))
   
   #Cut the tree in such a way that you have k groups.
-  this_seq_hc_obj_cuttree <- cutree(this_seq_hc_obj,  k = round(no_sequences/reduction_factor))
+  this_seq_hc_obj_cuttree <- cutree(this_seq_hc_obj,  k = round(old_n/reduction_factor))
   this_seq_hc_obj_cuttree <- as.data.frame(this_seq_hc_obj_cuttree)
   this_seq_hc_obj_cuttree[,2] <- rownames(this_seq_hc_obj_cuttree)
   colnames(this_seq_hc_obj_cuttree) <- c('Group', 'ID')
-  
+
   #Retrieve the k representative sequence names
   representative_sequence_names <- this_seq_hc_obj_cuttree$ID[match(unique(this_seq_hc_obj_cuttree$Group), this_seq_hc_obj_cuttree$Group)]
   
@@ -92,16 +92,15 @@ for (i in 1:no_of_files){
   
   all_reduced_count <- all_reduced_count + new_n
   
-  file = str_split(paste("aligned_", sequences_to_reduce[i,], sep = ''), '_')
-  
-  file[[1]][4] <- paste("n", new_n, ".fasta",sep = "")
-  
-  file_name <- paste(unlist(file), collapse = "_")
+  country <- strsplit(filename, split = '.f')[[1]][1]
+
+  file_name <- paste(country, '_', new_n, '.fasta', sep = '')
 
   #Save the files as a fasta file
-  write.FASTA(representative_sequences, file = paste('reduced_', file_name, sep = ''))
+  write.FASTA(representative_sequences, file = paste('Sequences/DENV1/Reduced/', file_name, sep = ''))
 }
-#Done. 
+#Done.  
+write.csv(this_seq_dist_mat, 'test.csv')
 #******************************************************************************#
 
 #******************************************************************************#
