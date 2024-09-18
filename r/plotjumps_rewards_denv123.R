@@ -7,7 +7,7 @@
 #*#******************************************************************************#
 #* Preliminaries. 
 #* 
-path <- "C:/Users/sn732/Box/DENV"
+path <- "Choose/Your/Path"
 setwd(path)
 
 # Load required files
