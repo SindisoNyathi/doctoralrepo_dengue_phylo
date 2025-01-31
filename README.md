@@ -3,4 +3,6 @@ This repository contains R, Python and Bash code that comprises the bioinformati
 
 # Detailed Analytic Workflow
 
+## 1. Compilation of sequencing database
 
+The sequence database used workflows like this depends on the goal of the analysis. The goal of my analysis is to investigate genetic diversity of dengue in Kenya and Africa, and also determine how dengue is making it's way into the communities I studied using phylogeographic approaches. My sequence database included 2 kinds of sequences - newly collected sequences and secondary data sequences, i.e. existing sequences collected by other teams in the past. Study details for the collection of dengue virus sequencing materials from our study sites and laboratory processing I conducted on the sequences are included in the manuscripts linked above. FASTQ files retrieved following illumina sequencing using a (custom tool provided by basespace)[bash/basespace_download.sh] and are processed using [this](bash/denv_singlesample_analysis.sh) workflow that makes use of arrays, based on similar work by [Grubaugh lab](https://grubaughlab.com/), [Vogels Lab](https://vogelslab.com/), [Bennet Lab](https://www.calacademy.org/staff-member/shannon-bennett-phd) and other dengue research teams.   
