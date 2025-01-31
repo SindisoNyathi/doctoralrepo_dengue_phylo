@@ -1,0 +1,11 @@
+<beast>
+    <pathSamplingAnalysis fileName="denv13_linked.mle.log.txt">
+        <likelihoodColumn name="pathLikelihood.delta"/>
+        <thetaColumn name="pathLikelihood.theta"/>      
+    </pathSamplingAnalysis>
+    
+    <steppingStoneSamplingAnalysis fileName="denv13_linked.mle.log.txt">
+        <likelihoodColumn name="pathLikelihood.delta"/>
+        <thetaColumn name="pathLikelihood.theta"/>      
+    </steppingStoneSamplingAnalysis>
+</beast>
