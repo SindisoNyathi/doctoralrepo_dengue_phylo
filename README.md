@@ -9,9 +9,8 @@ The sequence database used workflows like this depends on the goal of the analys
 
 To retrieve sequences collected from other groups, I used the (NCBIVirus)[https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/] website. NCBI has useful APIs that allow one to download larger sequence datasets that can also be used in (this)[r/genbank_sequencedownload.R] way. Using this API of the web app they have you cna select sequences based on your inclusion and exclusion criteria, with the goal of creating a comprehensive but unbiased sequencing dataset. My inclusion criteria included samples surce (human, and not vector or environemtal), dates (up to 2023) and some length requires (at least envelope gene for dengue, approx. 1400bp). These downloaded sequences were concatenated with my new sequences. One interesting step I had to include was a data reduction step. Since i am primarily interested in dengue in Africa, the thousands of sequences from places like Singapore and Brazil were very redundant. As such, I used this (script)[] to reduce country level sub-datasets to more manageable sizes, based on the original data size. Files were reduced by a factor, $r$ that depends on initial country datasize $N_c$, as follows, for each
 
-```
-c $\in$ C were $C$ = {Brazil, Colombia, Thailand, Vietnam, . . .}, 
-```
+$$c $\in$ C were $C$ = {Brazil, Colombia, Thailand, Vietnam, . . .}, $$
+
 
 $Nc$ is the number of sequences from that location included in the analysis. Define $r$ as follow, 
 $r = {1, Nc \geq 25, 
